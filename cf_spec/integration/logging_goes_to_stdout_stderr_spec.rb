@@ -33,6 +33,7 @@ describe 'nginx logs go to stdout and stderr' do
     expect(lambda{app}).to eventually(have_logged(/ERR.*GET \/idontexist HTTP\/1.1/)).within 30
     has_diego = `cf has-diego-enabled staticfile_app`.strip
     if has_diego == "true"
+      `cf ssh staticfile_app -c "ls -l /app"` # make sure cf ssh is available to avoid GCP race condition
       errorlog_size = `cf ssh staticfile_app -c "ls -l /app/nginx/logs/ | grep error.log" | awk '{print $5}'`.strip + 'B'
     else
       errorlog_size = `cf files staticfile_app /app/nginx/logs/ | grep error.log | tr -d "error.log" | tr -d " "`.strip
